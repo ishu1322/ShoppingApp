@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @EnableWebSecurity
 @Configuration
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 	
     @Autowired
@@ -33,10 +35,15 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    @Bean
+    @SuppressWarnings({ "removal", "deprecation" })
+	@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable()
-                .authorizeRequests()
+//                .authorizeHttpRequests((authorize) -> {
+//                	authorize.requestMatchers("/api/v1.0/shopping/login","/api/v1.0/shopping/register").permitAll();
+//                	authorize.anyRequest().authenticated();
+//                })
+        		.authorizeRequests()
                 .requestMatchers("/api/v1.0/shopping/login","/api/v1.0/shopping/register").permitAll()
                 .anyRequest().authenticated()
                 .and()

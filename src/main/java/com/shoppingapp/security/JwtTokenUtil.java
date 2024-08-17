@@ -1,31 +1,53 @@
 package com.shoppingapp.security;
 
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Date;
 import java.util.function.Function;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 
 
 @Component
 public class JwtTokenUtil {
 	
-    private String secret="secretKeyShoppingApp";
+    
 
     
     private long expiration=3600000;
+    private String secretkey = "";
+    
+    public JwtTokenUtil() {
+    	try {
+            KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
+            SecretKey sk = keyGen.generateKey();
+            secretkey = Base64.getEncoder().encodeToString(sk.getEncoded());
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    	
+    }
+    private SecretKey getKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretkey);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
 
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(SignatureAlgorithm.HS512, keyGen(secret))
+                .signWith(SignatureAlgorithm.HS256, getKey())
                 .compact();
     }
 
@@ -44,7 +66,7 @@ public class JwtTokenUtil {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .setSigningKey(secret)
+                .setSigningKey(getKey())
                 .parseClaimsJws(token)
                 .getBody();
     }
@@ -56,10 +78,7 @@ public class JwtTokenUtil {
     public boolean validateToken(String token, String username) {
         return (extractUsername(token).equals(username) && !isTokenExpired(token));
     }
-    public static String keyGen(String str) {
-        byte[] key = new byte[64]; // 512 bits
-        new SecureRandom().nextBytes(key);
-        String base64Key = Base64.getEncoder().encodeToString(key);
-        return base64Key;
-    }
+    
+  
+    
 }

@@ -3,7 +3,7 @@ package com.shoppingapp.model;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.bson.types.ObjectId;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -43,10 +43,10 @@ public class User {
 	@NotBlank
 	private String password;
 	
-	@DBRef
-	private Set<Role> roles=new HashSet<>();
+//	@DBRef
+	private Set<String> roles;
 	
-	public User(String loginId,String password,Set<Role> roles) {
+	public User(String loginId,String password,Set<String> roles) {
 		this.loginId=loginId;
 		this.password=password;
 		this.roles=roles;

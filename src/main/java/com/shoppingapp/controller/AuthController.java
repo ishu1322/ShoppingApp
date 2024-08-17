@@ -1,8 +1,10 @@
 package com.shoppingapp.controller;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,9 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shoppingapp.model.ERole;
 import com.shoppingapp.model.LoginRequest;
-import com.shoppingapp.model.Role;
+
 import com.shoppingapp.model.User;
+
 import com.shoppingapp.repository.UserRepository;
 import com.shoppingapp.security.JwtTokenUtil;
 
@@ -30,6 +34,8 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+    
+    
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -43,8 +49,12 @@ public class AuthController {
         if (userRepository.existsByLoginId(user.getLoginId())) {
             return "Username is already taken!";
         }
+        Set<String> roles = new HashSet<>();
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Collections.singleton(new Role("ROLE_USER")));
+//        Role role= roleRepository.findByRole();
+        roles.add("ROLE_ADMIN");
+        System.out.println(roles);
+        user.setRoles(roles);
         userRepository.save(user);
         return "User registered successfully!";
     }
