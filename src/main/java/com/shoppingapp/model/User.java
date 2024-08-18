@@ -1,15 +1,16 @@
 package com.shoppingapp.model;
 
-import java.util.HashSet;
+
 import java.util.Set;
 
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -43,10 +44,12 @@ public class User {
 	@NotBlank
 	private String password;
 	
-//	@DBRef
-	private Set<String> roles;
+
+	@NotNull(message = "Roles cannot be null")
+    @NotEmpty(message = "Roles cannot be empty")
+	private Set<Role> roles;
 	
-	public User(String loginId,String password,Set<String> roles) {
+	public User(String loginId,String password,Set<Role> roles) {
 		this.loginId=loginId;
 		this.password=password;
 		this.roles=roles;

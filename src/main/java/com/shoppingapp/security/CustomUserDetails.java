@@ -28,7 +28,7 @@ public class CustomUserDetails implements UserDetails {
 //	    	            .map(role -> role.getRole())
 //	    	            .collect(Collectors.toSet());
 	    	return user.getRoles().stream()
-	                .map(role -> new SimpleGrantedAuthority(role)) // Prefix with "ROLE_"
+	                .map(role -> new SimpleGrantedAuthority(role.name())) // Prefix with "ROLE_"
 	                .collect(Collectors.toList());
 	    }
 

@@ -44,7 +44,7 @@ public class SecurityConfig {
 //                	authorize.anyRequest().authenticated();
 //                })
         		.authorizeRequests()
-                .requestMatchers("/api/v1.0/shopping/login","/api/v1.0/shopping/register").permitAll()
+                .requestMatchers("/api/v1.0/shopping/login","/api/v1.0/shopping/register","/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
