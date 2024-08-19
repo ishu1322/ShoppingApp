@@ -3,6 +3,7 @@ package com.shoppingapp.controller;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,13 +15,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
+import com.shoppingapp.model.ForgotPasswordRequest;
 import com.shoppingapp.model.LoginRequest;
+import com.shoppingapp.model.ResponseMessage;
 import com.shoppingapp.model.Role;
 import com.shoppingapp.model.User;
 
@@ -51,15 +54,15 @@ public class AuthController {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
     
-    
+//    http://localhost:8081/api/v1.0/shopping/register
 	@PostMapping("/register")
 	@Operation(summary = "register")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody User user) {
         if (userRepository.existsByLoginId(user.getLoginId())) {
-            return ResponseEntity.badRequest().body("Error: LoginId Already Exist!");
+            return ResponseEntity.badRequest().body(new ResponseMessage("Error: LoginId Already Exist!"));
         }
         if (userRepository.existsByEmail(user.getEmail())) {
-            return ResponseEntity.badRequest().body("Error: User already exist with this Email!");
+            return ResponseEntity.badRequest().body(new ResponseMessage("Error: User already exist with this Email!"));
         }
         Set<Role> roles = new HashSet<>();
         for(Role role: user.getRoles()) {
@@ -77,10 +80,10 @@ public class AuthController {
         user.setRoles(roles);
         userRepository.save(user);
         log.info("New user registeres with username: "+ user.getLoginId());
-        return ResponseEntity.ok("User registered successfully!");
+        return ResponseEntity.ok(new ResponseMessage("User registered successfully!"));
     }
 	
-	
+//	http://localhost:8081/api/v1.0/shopping/login
 	@GetMapping("/login")
 	@Operation(summary = "login")
 	 public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest user) {
@@ -101,4 +104,29 @@ public class AuthController {
         		userDetails.getUsername(), 
         		roles));
     }
+	
+//	http://localhost:8081/api/v1.0/shopping/ishu/forgot
+	@GetMapping("/{loginId}/forgot")
+	@Operation(summary = "forgot password")
+	public ResponseEntity<?> resetPassword(@Valid @PathVariable String loginId, @Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest){
+		
+		
+		if(!userRepository.existsById(loginId)) {
+			return ResponseEntity.badRequest().body(new ResponseMessage("User does not exist with username: "+loginId));
+		}
+		
+		User existingUser = userRepository.findByLoginId(loginId).get();
+		
+		if(existingUser.getContactNumber().compareTo(forgotPasswordRequest.getContactNumber())==0 && 
+				existingUser.getEmail().equals(forgotPasswordRequest.getEmail())) {
+			existingUser.setPassword(passwordEncoder.encode(forgotPasswordRequest.getNewPassword()));
+			userRepository.save(existingUser);
+				
+			return ResponseEntity.ok(new ResponseMessage("Password changed successfully"));
+		}
+		
+		log.info("Paswword reset done for user: "+loginId);
+		return ResponseEntity.badRequest().body(new ResponseMessage("Email or Contact Number does not match with existing user."));
+		
+	}
 }

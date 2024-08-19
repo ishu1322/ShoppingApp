@@ -23,10 +23,7 @@ public class CustomUserDetails implements UserDetails {
 
 	    @Override
 	    public Collection<? extends GrantedAuthority> getAuthorities() {
-//	    	 return user.getRoles().stream()
-//	    	            .filter(role -> role != null && role.getRole() != null) // Add null checks
-//	    	            .map(role -> role.getRole())
-//	    	            .collect(Collectors.toSet());
+
 	    	return user.getRoles().stream()
 	                .map(role -> new SimpleGrantedAuthority(role.name())) // Prefix with "ROLE_"
 	                .collect(Collectors.toList());
