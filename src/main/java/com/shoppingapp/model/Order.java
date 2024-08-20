@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class Order {
 	
 	@Id
-    private ObjectId id;
+    private String id;
 
     @NotBlank
     private String product;

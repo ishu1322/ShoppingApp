@@ -2,9 +2,11 @@ package com.shoppingapp.controller;
 
 import java.util.List;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shoppingapp.exception.NotEnoughStock;
 import com.shoppingapp.exception.ProductAlreadyExist;
 import com.shoppingapp.exception.ProductsNotFound;
+import com.shoppingapp.kafka.KafkaProducer;
 import com.shoppingapp.model.Order;
 import com.shoppingapp.model.Product;
 import com.shoppingapp.model.ResponseMessage;
@@ -39,6 +42,12 @@ public class AppController {
 	
 	@Autowired
 	private OrderService orderService;
+	
+	@Autowired
+    private KafkaProducer kafkaProducer;
+	
+	@Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
 	
 	// http://localhost:8081/api/v1.0/shopping/all
 	@GetMapping("all")
@@ -170,6 +179,9 @@ public class AppController {
 			
 			log.info("order placed by user: "+user + " at " + placedOrder.getOrderDate()+" of product: "
 			+ placedOrder.getProduct()+ " quantity: "+placedOrder.getQuantity()+ " total price: "+placedOrder.getTotalPrice());
+			
+			kafkaProducer.sendOrderMessage(productName,"order placed by user: "+user + " at " + placedOrder.getOrderDate()+" of product: "
+					+ placedOrder.getProduct()+ " quantity: "+placedOrder.getQuantity()+ " total price: "+placedOrder.getTotalPrice());
 			
 			return ResponseEntity.ok(placedOrder);
 			
