@@ -38,6 +38,6 @@ public class Product {
 	@NotEmpty
 	private List<String> features;
 	
-	@NotNull
+	
 	private String status;
 }

@@ -1,8 +1,6 @@
 package com.shoppingapp.security;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
@@ -11,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.shoppingapp.model.User;
 
+@SuppressWarnings("serial")
 public class CustomUserDetails implements UserDetails {
 
 	 private final User user;

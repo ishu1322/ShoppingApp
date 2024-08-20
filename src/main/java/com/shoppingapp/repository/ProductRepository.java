@@ -9,7 +9,7 @@ import com.shoppingapp.model.Product;
 
 public interface ProductRepository extends MongoRepository<Product, ObjectId>{
 
-	List<Product> findByName(String productName);
+	List<Product> findByNameIgnoreCase(String productName);
 	List<Product> findByNameContainingIgnoreCase(String productName);
 	
 

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shoppingapp.ProductService;
+import com.shoppingapp.exception.ProductAlreadyExist;
 import com.shoppingapp.exception.ProductsNotFound;
 import com.shoppingapp.model.Product;
 import com.shoppingapp.model.ResponseMessage;
@@ -45,7 +46,7 @@ public class AppController {
 		List<Product> productList = productService.getAllProducts();
 		
 		if(productList.isEmpty()) {
-			log.info("No products available at the moment.");
+			log.warn("No products available at the moment.");
 			throw new ProductsNotFound("No Products found");
 		}
 		log.info("All products accessed");
@@ -61,8 +62,8 @@ public class AppController {
 		List<Product> productList=productService.searchProductByName(productName);
 		
 		if(productList.isEmpty()) {
-			log.info("No search result found with query: "+productName);
-			throw new ProductsNotFound("No products  available with this name");
+			log.warn("No search result found with query: "+productName);
+			throw new ProductsNotFound("No products  available with this name: "+productName);
 		}
 		
 		
@@ -70,16 +71,51 @@ public class AppController {
 	}
 	
 //	http://localhost:8081/api/v1.0/shopping/{productName}/add
+	@PreAuthorize("hasRole('ADMIN')")
+	@SecurityRequirement(name = "Bearer Authentication")
+	@Operation(summary = "add new product (admin)")
 	@PostMapping("{productName}/add")
-	public ResponseEntity<Product> addProduct(@PathVariable String productName,@Valid @RequestBody Product product) {
+	public ResponseEntity<Product> addProduct(@PathVariable String productName,@Valid @RequestBody Product product) throws ProductAlreadyExist {
+		
+		List<Product> products = productService.getProductByNameIgnoreCase(productName);
+		
+		if(!products.isEmpty()) {
+			log.warn("Cannot add existing Product :"+productName);
+			throw new ProductAlreadyExist("Product Already Exist by name: "+productName);
+		}
+		
+		product.setStatus(productService.generateStatus(product));
 		Product savedProduct= productService.addProduct(product);
+		log.info("new product added: "+productName);
 		return ResponseEntity.ok(savedProduct);
 	}
 	
+	
+//	http://localhost:8081/api/v1.0/shopping/iphone/update
 	@PreAuthorize("hasRole('ADMIN')")
-	@PutMapping("/{productName}/update/{productStatus}")
-	public String updateProductStatus() {
-		return "Status updated";
+	@PutMapping("/{productName}/update")
+	@SecurityRequirement(name = "Bearer Authentication")
+	@Operation(summary = "update product (admin)")
+	public ResponseEntity<Product> updateProductStatus(@PathVariable String productName,@Valid @RequestBody Product product) throws ProductsNotFound {
+		
+		List<Product> products = productService.getProductByNameIgnoreCase(productName);
+		
+		if(products.isEmpty()) {
+			log.warn("No product found with name: "+productName);
+			throw new ProductsNotFound("No products  available with this name: "+productName);
+		}
+		
+		Product existingProduct = products.get(0);
+		
+		existingProduct.setDescription(product.getDescription());
+		existingProduct.setFeatures(product.getFeatures());
+		existingProduct.setPrice(product.getPrice());
+		existingProduct.setQuantity(product.getQuantity());
+		existingProduct.setStatus(productService.generateStatus(product));
+		
+		Product savedProduct=productService.addProduct(existingProduct);
+		log.info("Product updated by admin: "+productName);
+		return ResponseEntity.ok(savedProduct);
 	}
 	
 //	http://localhost:8081/api/v1.0/shopping/{productName}/delete

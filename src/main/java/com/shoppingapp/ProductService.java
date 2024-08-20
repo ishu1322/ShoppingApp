@@ -33,9 +33,9 @@ public class ProductService {
 		
 	}
 
-	public List<Product> getProductByName(String productName) {
+	public List<Product> getProductByNameIgnoreCase(String productName) {
 		
-		return productRepo.findByName(productName);
+		return productRepo.findByNameIgnoreCase(productName);
 	}
 
 	public void deleteByName(String productName) throws ProductsNotFound {
@@ -51,6 +51,21 @@ public class ProductService {
         } else {
             throw new ProductsNotFound("Product not found: " + productName);
         }
+		
+	}
+	
+	public String generateStatus(Product product) {
+		
+		int quantity = product.getQuantity();
+		if(quantity<=0) {
+			return "OUT OF STOCK";
+		}
+		else if(quantity>0 && quantity<=10) {
+			return "HURRY UP TO PURCHASE";
+			
+		}else {
+			return "IN STOCK";
+		}
 		
 	}
 }
