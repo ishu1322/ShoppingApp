@@ -15,11 +15,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.shoppingapp.ProductService;
+import com.shoppingapp.exception.NotEnoughStock;
 import com.shoppingapp.exception.ProductAlreadyExist;
 import com.shoppingapp.exception.ProductsNotFound;
+import com.shoppingapp.model.Order;
 import com.shoppingapp.model.Product;
 import com.shoppingapp.model.ResponseMessage;
+import com.shoppingapp.service.OrderService;
+import com.shoppingapp.service.ProductService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -33,6 +36,9 @@ public class AppController {
 	
 	@Autowired
 	private ProductService productService;
+	
+	@Autowired
+	private OrderService orderService;
 	
 	// http://localhost:8081/api/v1.0/shopping/all
 	@GetMapping("all")
@@ -58,7 +64,8 @@ public class AppController {
 	@GetMapping("products/search/{productName}")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@Operation(summary = "search products by name")
-	public ResponseEntity<List<Product>> searchProduct(@PathVariable String productName) throws ProductsNotFound {
+	public ResponseEntity<List<Product>> searchProduct(@PathVariable String productName) 
+			throws ProductsNotFound {
 		List<Product> productList=productService.searchProductByName(productName);
 		
 		if(productList.isEmpty()) {
@@ -75,7 +82,8 @@ public class AppController {
 	@SecurityRequirement(name = "Bearer Authentication")
 	@Operation(summary = "add new product (admin)")
 	@PostMapping("{productName}/add")
-	public ResponseEntity<Product> addProduct(@PathVariable String productName,@Valid @RequestBody Product product) throws ProductAlreadyExist {
+	public ResponseEntity<Product> addProduct(@PathVariable String productName,@Valid @RequestBody Product product) 
+			throws ProductAlreadyExist {
 		
 		List<Product> products = productService.getProductByNameIgnoreCase(productName);
 		
@@ -96,7 +104,8 @@ public class AppController {
 	@PutMapping("/{productName}/update")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@Operation(summary = "update product (admin)")
-	public ResponseEntity<Product> updateProductStatus(@PathVariable String productName,@Valid @RequestBody Product product) throws ProductsNotFound {
+	public ResponseEntity<Product> updateProductStatus(@PathVariable String productName,@Valid @RequestBody Product product) 
+			throws ProductsNotFound {
 		
 		List<Product> products = productService.getProductByNameIgnoreCase(productName);
 		
@@ -129,4 +138,42 @@ public class AppController {
 		
 		return ResponseEntity.ok(new ResponseMessage("Product deleted successfully."));
 	}
+	
+	
+	
+//	http://localhost:8081/api/v1.0/shopping/{productName}/order
+		@PreAuthorize("hasRole('USER')")
+		@SecurityRequirement(name = "Bearer Authentication")
+		@Operation(summary = "order product")
+		@PostMapping("{productName}/order")
+		public ResponseEntity<Order> orderProduct(@PathVariable String productName,@Valid @RequestBody Order order) 
+				throws ProductsNotFound, NotEnoughStock{
+			
+			List<Product> products = productService.getProductByNameIgnoreCase(productName);
+			
+			if(products.isEmpty()) {
+				log.warn("No product found with name: "+productName);
+				throw new ProductsNotFound("No products  available with this name: "+productName);
+			}
+			
+			Product product = products.get(0);
+			if(product.getQuantity()<order.getQuantity()) {
+				log.warn("Not enough quatity present for product: "+productName);
+				throw new NotEnoughStock("Not enough quatity present, quatity present: "+product.getQuantity() +" order recieved for qty: "+ order.getQuantity());
+			}
+			
+			String user=orderService.getUser();
+			order.setCustomer(user);
+			order.setTotalPrice(product.getPrice()*order.getQuantity());
+			Order placedOrder = orderService.placeOrder(order);
+			productService.updateQuantityandStatus(product,placedOrder.getQuantity());
+			
+			log.info("order placed by user: "+user + " at " + placedOrder.getOrderDate()+" of product: "
+			+ placedOrder.getProduct()+ " quantity: "+placedOrder.getQuantity()+ " total price: "+placedOrder.getTotalPrice());
+			
+			return ResponseEntity.ok(placedOrder);
+			
+		}
+	
+	
 }

@@ -1,4 +1,4 @@
-package com.shoppingapp;
+package com.shoppingapp.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -67,5 +67,19 @@ public class ProductService {
 			return "IN STOCK";
 		}
 		
+	}
+
+	public void updateQuantity(String productName, int quantity) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void updateQuantityandStatus(Product product, int quantity) {
+		
+		int newQuantity=product.getQuantity()-quantity;
+		product.setQuantity(newQuantity);
+		product.setStatus(generateStatus(product));
+		productRepo.save(product);
+		log.info("Quatity updated for product: "+product.getName() + " and Status updated to: " + product.getStatus());
 	}
 }

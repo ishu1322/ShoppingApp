@@ -41,4 +41,10 @@ public class GlobalExceptionHandler extends Exception{
          ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), request.getDescription(false));
          return new ResponseEntity<>(errorDetails, HttpStatus.METHOD_NOT_ALLOWED);
     }
+	
+	@ExceptionHandler(NotEnoughStock.class)
+    public ResponseEntity<?> notEnoughStock(Exception ex, WebRequest request) {
+         ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), request.getDescription(false));
+         return new ResponseEntity<>(errorDetails, HttpStatus.METHOD_NOT_ALLOWED);
+    }
 }
