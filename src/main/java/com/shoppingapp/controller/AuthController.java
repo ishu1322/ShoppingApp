@@ -120,11 +120,11 @@ public class AuthController {
 				existingUser.getEmail().equals(forgotPasswordRequest.getEmail())) {
 			existingUser.setPassword(passwordEncoder.encode(forgotPasswordRequest.getNewPassword()));
 			userRepository.save(existingUser);
-				
+			log.info("Paswword reset done for user: "+loginId);
 			return ResponseEntity.ok(new ResponseMessage("Password changed successfully"));
 		}
 		
-		log.info("Paswword reset done for user: "+loginId);
+		
 		return ResponseEntity.badRequest().body(new ResponseMessage("Email or Contact Number does not match with existing user."));
 		
 	}

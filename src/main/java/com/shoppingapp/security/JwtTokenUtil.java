@@ -4,6 +4,8 @@ package com.shoppingapp.security;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import javax.crypto.KeyGenerator;
@@ -43,16 +45,18 @@ public class JwtTokenUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    @SuppressWarnings("deprecation")
+    
 	public String generateToken(Authentication authentication) {
     	
     	CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-    	
+    	Map<String,Object> map=new HashMap<>();
+    	map.put("role",userDetails.getAuthorities());
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
+        		.setClaims(map)
+        		.setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(SignatureAlgorithm.HS256, getKey())
+                .signWith(getKey(),SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -69,10 +73,11 @@ public class JwtTokenUtil {
         return claimsResolver.apply(claims);
     }
 
-    @SuppressWarnings("deprecation")
+
 	private Claims extractAllClaims(String token) {
-        return Jwts.parser()
+        return Jwts.parserBuilder()
                 .setSigningKey(getKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }

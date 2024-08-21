@@ -1,7 +1,6 @@
 package com.shoppingapp.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,16 +39,17 @@ public class ProductService {
 
 	public void deleteByName(String productName) throws ProductsNotFound {
 		
-		Optional<Product> productOptional = productRepo.findByNameContainingIgnoreCase(productName)
-                .stream()
-                .filter(product -> product.getName().equalsIgnoreCase(productName))
-                .findFirst();
+		List<Product> products = productRepo.findByNameContainingIgnoreCase(productName);
+               
 
-        if (productOptional.isPresent()) {
-            productRepo.delete(productOptional.get());
-            log.info("product deleted by admin with name: "+ productName);
+        if (products.isEmpty()) {
+        	
+        	throw new ProductsNotFound("Product not found: " + productName);
+            
         } else {
-            throw new ProductsNotFound("Product not found: " + productName);
+        	productRepo.deleteByName(products.get(0).getName());
+        	System.out.println(products.get(0));
+            log.info("product "+ "'"+productName + "'" +" deleted by admin");
         }
 		
 	}

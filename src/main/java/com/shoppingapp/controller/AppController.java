@@ -6,7 +6,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,8 +45,7 @@ public class AppController {
 	@Autowired
     private KafkaProducer kafkaProducer;
 	
-	@Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
+
 	
 	// http://localhost:8081/api/v1.0/shopping/all
 	@GetMapping("all")

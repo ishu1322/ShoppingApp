@@ -2,7 +2,7 @@ package com.shoppingapp.model;
 
 import java.util.List;
 
-import org.bson.types.ObjectId;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 public class Product {
 	
 	@Id
-	private ObjectId Id;
+	private String Id;
 	
 	@NotBlank
 	private String name;
