@@ -48,7 +48,7 @@ public class ProductService {
             
         } else {
         	productRepo.deleteByName(products.get(0).getName());
-        	System.out.println(products.get(0));
+        	
             log.info("product "+ "'"+productName + "'" +" deleted by admin");
         }
 		
@@ -69,10 +69,7 @@ public class ProductService {
 		
 	}
 
-	public void updateQuantity(String productName, int quantity) {
-		// TODO Auto-generated method stub
-		
-	}
+
 
 	public void updateQuantityandStatus(Product product, int quantity) {
 		
