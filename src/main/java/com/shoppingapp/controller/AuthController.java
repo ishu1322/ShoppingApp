@@ -56,7 +56,7 @@ public class AuthController {
 //    http://localhost:8081/api/v1.0/shopping/register
 	@PostMapping("/register")
 	@Operation(summary = "register")
-	public ResponseEntity<?> registerUser(@Valid @RequestBody User user) {
+	public ResponseEntity<ResponseMessage> registerUser(@Valid @RequestBody User user) {
         if (userRepository.existsByLoginId(user.getLoginId())) {
             return ResponseEntity.badRequest().body(new ResponseMessage("Error: LoginId Already Exist!"));
         }
@@ -74,8 +74,6 @@ public class AuthController {
         }
         
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        
-        System.out.println(roles);
         user.setRoles(roles);
         userRepository.save(user);
         log.info("New user registeres with username: "+ user.getLoginId());
@@ -85,7 +83,7 @@ public class AuthController {
 //	http://localhost:8081/api/v1.0/shopping/login
 	@GetMapping("/login")
 	@Operation(summary = "login")
-	 public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest user) {
+	 public ResponseEntity<JWTResponse> authenticateUser(@Valid @RequestBody LoginRequest user) {
         
 		Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getLoginId(), user.getPassword()));
@@ -107,7 +105,7 @@ public class AuthController {
 //	http://localhost:8081/api/v1.0/shopping/ishu/forgot
 	@GetMapping("/{loginId}/forgot")
 	@Operation(summary = "forgot password")
-	public ResponseEntity<?> resetPassword(@Valid @PathVariable String loginId, @Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest){
+	public ResponseEntity<ResponseMessage> resetPassword(@Valid @PathVariable String loginId, @Valid @RequestBody ForgotPasswordRequest forgotPasswordRequest){
 		
 		
 		if(!userRepository.existsById(loginId)) {

@@ -1,9 +1,7 @@
 package com.shoppingapp.model;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.shoppingapp.exception.NotEnoughStock;
@@ -63,25 +64,25 @@ public class AppController {
 			throw new ProductsNotFound("No Products found");
 		}
 		log.info("All products accessed");
-		return new ResponseEntity<List<Product>>(productList ,HttpStatus.FOUND);
+		return new ResponseEntity<>(productList ,HttpStatus.FOUND);
 	}
 	
 //	http://localhost:8081/api/v1.0/shopping/products/search/ph
 	@PreAuthorize("hasRole('USER')")
-	@GetMapping("products/search/{productName}")
+	@GetMapping("products/search")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@Operation(summary = "search products by name")
-	public ResponseEntity<List<Product>> searchProduct(@PathVariable String productName) 
+	public ResponseEntity<List<Product>> searchProduct(@RequestParam("query") String name) 
 			throws ProductsNotFound {
-		List<Product> productList=productService.searchProductByName(productName);
+		List<Product> productList=productService.searchProductByName(name);
 		
 		if(productList.isEmpty()) {
-			log.warn("No search result found with query: "+productName);
-			throw new ProductsNotFound("No products  available with this name: "+productName);
+			log.warn("No search result found with query: "+name);
+			throw new ProductsNotFound("No products available with this name: "+name);
 		}
 		
-		
-		return new ResponseEntity<List<Product>>(productList ,HttpStatus.FOUND);
+		log.info("Search result return for query: "+name);
+		return new ResponseEntity<>(productList ,HttpStatus.FOUND);
 	}
 	
 //	http://localhost:8081/api/v1.0/shopping/{productName}/add
@@ -118,7 +119,7 @@ public class AppController {
 		
 		if(products.isEmpty()) {
 			log.warn("No product found with name: "+productName);
-			throw new ProductsNotFound("No products  available with this name: "+productName);
+			throw new ProductsNotFound("No products available with this name: "+productName);
 		}
 		
 		Product existingProduct = products.get(0);
@@ -139,7 +140,7 @@ public class AppController {
 	@DeleteMapping("{productName}/delete")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@Operation(summary = "delete products (admin)")
-	public ResponseEntity<?> deleteProduct(@PathVariable String productName) throws ProductsNotFound  {
+	public ResponseEntity<ResponseMessage> deleteProduct(@PathVariable String productName) throws ProductsNotFound  {
 				
 		productService.deleteByName(productName);
 		
