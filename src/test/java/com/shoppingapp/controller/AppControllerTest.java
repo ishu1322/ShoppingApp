@@ -230,8 +230,7 @@ public class AppControllerTest {
 	    @Test
 	    void testOrderProductProductNotFound() {
 	        // Arrange
-//	    	List<String> features = List.of("feature 1");
-//			Product product = new Product("ID1","Product 1", "Description 1", 100,12,features,"IN STOCK") ;
+
 	        String productName = "Nonexistent Product";
 	        Order order = new Order();
 	        order.setQuantity(5);
