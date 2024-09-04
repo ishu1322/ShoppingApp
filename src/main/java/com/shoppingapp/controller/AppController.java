@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shoppingapp.exception.NotEnoughStock;
 import com.shoppingapp.exception.ProductAlreadyExist;
 import com.shoppingapp.exception.ProductsNotFound;
+import com.shoppingapp.kafka.KafkaConsumer;
 import com.shoppingapp.kafka.KafkaProducer;
 import com.shoppingapp.model.Order;
 import com.shoppingapp.model.Product;
@@ -45,6 +46,9 @@ public class AppController {
 	
 	@Autowired
     private KafkaProducer kafkaProducer;
+	
+	@Autowired
+	private KafkaConsumer kafkaConsumer;
 	
 
 	
@@ -179,11 +183,20 @@ public class AppController {
 			log.info("order placed by user: "+user + " at " + placedOrder.getOrderDate()+" of product: "
 			+ placedOrder.getProduct()+ " quantity: "+placedOrder.getQuantity()+ " total price: "+placedOrder.getTotalPrice());
 			
-			kafkaProducer.sendOrderMessage(productName,"order placed by user: "+user + " at " + placedOrder.getOrderDate()+" of product: "
-					+ placedOrder.getProduct()+ " quantity: "+placedOrder.getQuantity()+ " total price: "+placedOrder.getTotalPrice());
+			kafkaProducer.sendOrderMessage(productName,"Order placed by user: "+user + " at " + placedOrder.getOrderDate()+" of product: "
+					+ placedOrder.getProduct()+ ", quantity: "+placedOrder.getQuantity()+ ", total price: "+placedOrder.getTotalPrice());
 			
 			return ResponseEntity.ok(placedOrder);
 			
+		}
+		
+		@PreAuthorize("hasRole('ADMIN')")
+		@SecurityRequirement(name = "Bearer Authentication")
+		@Operation(summary = "getch kafka order messages (admin)")
+		@GetMapping("getOrders")
+		public ResponseEntity<List<String>> getOrderMessages(){ 
+			log.info("kafka order messages accessed by admin");
+			return ResponseEntity.ok(kafkaConsumer.getMessages());
 		}
 	
 	
