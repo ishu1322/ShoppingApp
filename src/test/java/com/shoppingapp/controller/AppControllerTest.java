@@ -1,6 +1,8 @@
 package com.shoppingapp.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -11,7 +13,7 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.List;
 
-
+import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,6 +25,7 @@ import org.springframework.http.ResponseEntity;
 import com.shoppingapp.exception.NotEnoughStock;
 import com.shoppingapp.exception.ProductAlreadyExist;
 import com.shoppingapp.exception.ProductsNotFound;
+import com.shoppingapp.kafka.KafkaConsumer;
 import com.shoppingapp.kafka.KafkaProducer;
 import com.shoppingapp.model.Order;
 import com.shoppingapp.model.Product;
@@ -45,6 +48,9 @@ public class AppControllerTest {
 
 	  @Mock
 	  private KafkaProducer kafkaProducer;
+	  
+	  @Mock
+	  private KafkaConsumer kafkaConsumer;
 	 
 	 @Test
 	  void testViewAllProductsNoProductsFound() {
@@ -292,8 +298,25 @@ public class AppControllerTest {
 	        verify(productService, times(1)).updateQuantityandStatus(product, order.getQuantity());
 	        (verify(kafkaProducer, times(1))).sendOrderMessage(
 	                productName,
-	                "order placed by user: User123 at " + order.getOrderDate() + " of product: "
-	                        + order.getProduct() + " quantity: " + order.getQuantity()
-	                        + " total price: " + order.getTotalPrice());
+	                "Order placed by user: User123" + " at " + order.getOrderDate()+" of product: "
+	    					+ order.getProduct()+ ", quantity: "+order.getQuantity()+ ", total price: "+order.getTotalPrice());
+	    }
+	    
+	    @Test
+	    public void testGetOrderMessages() throws Exception {
+	        // Arrange
+	        List<String> mockMessages = List.of("Order1", "Order2", "Order3");
+	        when(kafkaConsumer.getMessages()).thenReturn(mockMessages);
+
+	        // Act
+	        ResponseEntity<List<String>> response = appController.getOrderMessages();
+
+	        // Assert
+	        assertNotNull(response);
+	        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+	        assertEquals(mockMessages, response.getBody());
+	        
+	        // Verify that kafkaConsumer.getMessages() was called exactly once
+	        verify(kafkaConsumer, times(1)).getMessages();
 	    }
 }
