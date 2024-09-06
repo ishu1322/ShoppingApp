@@ -71,7 +71,7 @@ public class AppController {
 		return new ResponseEntity<>(productList ,HttpStatus.FOUND);
 	}
 	
-//	http://localhost:8081/api/v1.0/shopping/products/search/ph
+//	http://localhost:8081/api/v1.0/shopping/products/search?query=
 	@PreAuthorize("hasRole('USER')")
 	@GetMapping("products/search")
 	@SecurityRequirement(name = "Bearer Authentication")
